@@ -100,8 +100,6 @@ module.exports.update = async (event, context) => {
     await connectToDatabase();
 
     const { path } = event.pathParameters;
-    console.log(event.body)
-    console.log(JSON.parse(event.body))
     const newFields = JSON.parse(event.body);
     const form = await Form.findOneAndUpdate({
       path
@@ -111,7 +109,6 @@ module.exports.update = async (event, context) => {
       new: true,
       timestamps: true
     });
-    console.log(form)
 
     if (!form)
       return notFoundElement();
