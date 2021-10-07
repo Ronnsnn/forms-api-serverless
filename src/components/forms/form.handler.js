@@ -1,9 +1,15 @@
 'use strict';
 
-require('dotenv').config();
-
-const connectToDatabase = require('../../config/db');
+const { connectToDatabase } = require('../../config/db');
 const Form = require('./form.model');
+
+const notFoundElement = (result = null, statusCode = 404) => {
+  return {
+    statusCode,
+    body: JSON.stringify({ result }, null, 2),
+    headers: { "Content-Type": "application/json" }
+  };
+};
 
 /**
  * Get all Forms with getAllForms function
@@ -40,11 +46,7 @@ module.exports.get = async (event, context) => {
     const form = await Form.findOne({ path });
 
     if (!form)
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ result: null }, null, 2),
-        headers: { "Content-Type": "application/json" }
-      };
+      return notFoundElement(null);
     else
       return {
         statusCode: 200,
@@ -98,6 +100,8 @@ module.exports.update = async (event, context) => {
     await connectToDatabase();
 
     const { path } = event.pathParameters;
+    console.log(event.body)
+    console.log(JSON.parse(event.body))
     const newFields = JSON.parse(event.body);
     const form = await Form.findOneAndUpdate({
       path
@@ -107,12 +111,17 @@ module.exports.update = async (event, context) => {
       new: true,
       timestamps: true
     });
-    
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ result: form }, null, 2),
-      headers: { "Content-Type": "application/json" }
-    };
+    console.log(form)
+
+    if (!form)
+      return notFoundElement();
+    else
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ result: form }, null, 2),
+        headers: { "Content-Type": "application/json" }
+      };
+
   } catch (err) {
     return {
       statusCode: 500,
@@ -126,7 +135,7 @@ module.exports.update = async (event, context) => {
 /**
  * Delete Form with removeForm function
  */
-module.exports.delete = async (event, context) => {
+module.exports.destroy = async (event, context) => {
   try {
     context.callbackWaitsForEmptyEventLoop = false;
     await connectToDatabase();
@@ -134,11 +143,15 @@ module.exports.delete = async (event, context) => {
     const { path } = event.pathParameters;
     const form = await Form.findOneAndDelete({ path });
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ result: form }, null, 2),
-      headers: { "Content-Type": "application/json" }
-    };
+    if (!form)
+      return notFoundElement();
+    else
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ result: form }, null, 2),
+        headers: { "Content-Type": "application/json" }
+      };
+
   } catch (err) {
     return {
       statusCode: 500,

@@ -37,6 +37,9 @@ node_modules
 
 #SERVERLESS STUFF
 admin.env
-.env
 _meta
 .serverless
+
+#ENV
+.env
+.env.*
